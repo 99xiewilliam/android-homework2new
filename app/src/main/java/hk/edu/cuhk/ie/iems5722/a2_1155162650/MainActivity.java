@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                             Object item = listView.getAdapter().getItem(i);
                             Intent it = new Intent(context, ChatActivity.class);
-
+                            it.putExtra("name", item.toString());
                             startActivity(it);
 
                             //Toast.makeText(context, item.toString(), Toast.LENGTH_SHORT).show();
