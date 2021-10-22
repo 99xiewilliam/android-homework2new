@@ -6,11 +6,15 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
-public abstract class HttpPost extends AsyncTask<String, String, Boolean> implements SuccessFailed{
+import java.net.URL;
+
+public abstract class HttpPostTask extends AsyncTask<String, String, Boolean> implements SuccessFailed{
     private JSONObject response;
 
     @Override
@@ -20,11 +24,22 @@ public abstract class HttpPost extends AsyncTask<String, String, Boolean> implem
 
     @Override
     protected Boolean doInBackground(String... params) {
+        String url = params[0];
         try{
-            HttpGet httpGet = new HttpGet(params[0]);
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpResponse response = httpClient.execute(httpGet);
+            DefaultHttpClient client = new DefaultHttpClient();
 
+            HttpPost post = new HttpPost(url);
+            post.setHeader("Content-type", "application/json");
+            post.setHeader("Accept", "application/json");
+
+            JSONObject param_data = new JSONObject();
+            param_data.put("chatroom_id", params[1]);
+            param_data.put("user_id", params[2]);
+            param_data.put("name", params[3]);
+            param_data.put("message", params[4]);
+            post.setEntity(new StringEntity(param_data.toString()));
+
+            HttpResponse response = client.execute(post);
             int status = response.getStatusLine().getStatusCode();
 
             if (status == 200) {
@@ -33,6 +48,8 @@ public abstract class HttpPost extends AsyncTask<String, String, Boolean> implem
                 setResponse(new JSONObject(data));
                 return true;
             }
+
+
         }catch (Exception e) {
             e.printStackTrace();
         }

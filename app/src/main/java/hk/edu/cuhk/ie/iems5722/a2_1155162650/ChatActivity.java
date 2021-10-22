@@ -103,7 +103,19 @@ public class ChatActivity extends AppCompatActivity {
                     ChatMsgEntity chatMsgEntity = new ChatMsgEntity();
                     chatMsgEntity.setMessage(content);
                     chatMsgEntity.setDate(getDate());
-                    chatMsgEntity.setUser("me");
+                    chatMsgEntity.setUser("william");
+                    new HttpPostTask() {
+                        @Override
+                        public void success() {
+                            JSONObject json = super.getResponse();
+                            System.out.println(json.toString());
+                        }
+
+                        @Override
+                        public void failed() {
+
+                        }
+                    }.execute("http://18.217.125.61/api/a3/send_message", id, "1155162650", chatMsgEntity.getUser(), chatMsgEntity.getMessage());
                     lists.add(chatMsgEntity);
                     myAdapter.notifyDataSetChanged();
                     listView.setSelection(lists.size() - 1);
@@ -198,7 +210,7 @@ public class ChatActivity extends AppCompatActivity {
 //            holder.tv_receive.setVisibility(View.VISIBLE);
 //            holder.tv_receive.setText("User: " + lists.get(i).getUser() + "\n" + lists.get(i).getMessage() + "\n" +
 //                    "\t\t" + lists.get(i).getDate());
-            if (lists.get(i).getUser() != null && !lists.get(i).getUser().equals("me")) {
+            if (lists.get(i).getUser() != null && !lists.get(i).getUser().equals("william")) {
                 holder.tv_receive.setVisibility(View.VISIBLE);
                 holder.tv_send.setVisibility(View.GONE);
                 holder.tv_receive.setText("User: " + lists.get(i).getUser() + "\n" + lists.get(i).getMessage() + "\n" +
