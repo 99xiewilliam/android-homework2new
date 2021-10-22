@@ -3,6 +3,7 @@ package hk.edu.cuhk.ie.iems5722.a2_1155162650;
 public class ChatMsgEntity {
     private String message;
     private String date;
+    private String user;
 
     public String getMessage() {
         return message;
@@ -10,6 +11,10 @@ public class ChatMsgEntity {
 
     public String getDate() {
         return date;
+    }
+
+    public String getUser() {
+        return user;
     }
 
     public void setMessage(String message) {
@@ -20,5 +25,7 @@ public class ChatMsgEntity {
         this.date = date;
     }
 
-
+    public void setUser(String user) {
+        this.user = user;
+    }
 }

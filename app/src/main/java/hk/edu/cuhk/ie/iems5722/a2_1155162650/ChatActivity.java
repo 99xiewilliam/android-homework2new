@@ -16,12 +16,16 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import hk.edu.cuhk.ie.iems5722.a2_1155162650.databinding.ActivityMainBinding;
+//import hk.edu.cuhk.ie.iems5722.a2_1155162650.databinding.ActivityMainBinding;
 
 public class ChatActivity extends AppCompatActivity {
     private ImageView btn;
@@ -29,7 +33,8 @@ public class ChatActivity extends AppCompatActivity {
     private EditText editText;
     private MyAdapter myAdapter;
     private List<ChatMsgEntity> lists = new ArrayList<>();
-    private Context context;
+    private List<ChatMsgEntity> lists1 = new ArrayList<>();
+    private Integer judge = 0;
 
 
     @Override
@@ -39,17 +44,66 @@ public class ChatActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         Intent i = getIntent();
         actionBar.setTitle(i.getStringExtra("name"));
+//        System.out.println(i.getStringExtra("id"));
+        String id = i.getStringExtra("id");
 
         initView();
+
+        new HttpTask() {
+            @Override
+            public void success() {
+                JSONObject jsonObj = super.getResponse();
+                JSONObject json = null;
+                try {
+                    if (jsonObj.has("data")) {
+                        json = jsonObj.getJSONObject("data");
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    JSONArray jsonArray = json.getJSONArray("messages");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        ChatMsgEntity chatMsgEntity = new ChatMsgEntity();
+                        if (jsonObject.has("message")) {
+                            chatMsgEntity.setMessage(jsonObject.getString("message"));
+                        }
+                        if (jsonObject.has("message_time")) {
+                            chatMsgEntity.setDate(jsonObject.getString("message_time"));
+                        }
+                        if (jsonObject.has("name")) {
+                            chatMsgEntity.setUser(jsonObject.getString("name"));
+                        }
+                        lists.add(chatMsgEntity);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                judge = 0;
+                myAdapter = new MyAdapter();
+                listView.setAdapter(myAdapter);
+                myAdapter.notifyDataSetChanged();
+                listView.setSelection(lists.size() - 1);
+            }
+
+            @Override
+            public void failed() {
+
+            }
+        }.execute("http://18.217.125.61/api/a3/get_messages?chatroom_id=" + id + "&page=1");
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                judge = 1;
                 String content = editText.getText().toString();
                 if (content!= null && !content.equals("")) {
                     ChatMsgEntity chatMsgEntity = new ChatMsgEntity();
                     chatMsgEntity.setMessage(content);
                     chatMsgEntity.setDate(getDate());
+                    chatMsgEntity.setUser("me");
                     lists.add(chatMsgEntity);
                     myAdapter.notifyDataSetChanged();
                     listView.setSelection(lists.size() - 1);
@@ -57,8 +111,7 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         });
-        myAdapter = new MyAdapter();
-        listView.setAdapter(myAdapter);
+
 
     }
 
@@ -141,20 +194,26 @@ public class ChatActivity extends AppCompatActivity {
             } else {
                 holder = (ViewHolder) view.getTag();
             }
-            holder.tv_send.setVisibility(View.VISIBLE);
-            holder.tv_receive.setVisibility(View.GONE);
-            holder.tv_send.setText(lists.get(i).getMessage() + "\n" +
-                    lists.get(i).getDate());
-
-//            Msg msg = getItem(i);
-//            if (msg.type == Msg.TYPE_RECEIVE) {
-//                holder.tv_receive.setVisibility(View.VISIBLE);
-//                holder.tv_send.setVisibility(View.GONE);
-//                holder.tv_receive.setText(msg.content);
-//            } else if (msg.type == Msg.TYPE_SEND) {
+//            holder.tv_send.setVisibility(View.GONE);
+//            holder.tv_receive.setVisibility(View.VISIBLE);
+//            holder.tv_receive.setText("User: " + lists.get(i).getUser() + "\n" + lists.get(i).getMessage() + "\n" +
+//                    "\t\t" + lists.get(i).getDate());
+            if (lists.get(i).getUser() != null && !lists.get(i).getUser().equals("me")) {
+                holder.tv_receive.setVisibility(View.VISIBLE);
+                holder.tv_send.setVisibility(View.GONE);
+                holder.tv_receive.setText("User: " + lists.get(i).getUser() + "\n" + lists.get(i).getMessage() + "\n" +
+                        "\t\t" + lists.get(i).getDate());
+            } else {
+                holder.tv_send.setVisibility(View.VISIBLE);
+                holder.tv_receive.setVisibility(View.GONE);
+                holder.tv_send.setText("User: " + lists.get(i).getUser() + "\n" + lists.get(i).getMessage() + "\n" +
+                        "\t\t" + lists.get(i).getDate());
+            }
+//            if (judge == 1) {
 //                holder.tv_send.setVisibility(View.VISIBLE);
 //                holder.tv_receive.setVisibility(View.GONE);
-//                holder.tv_send.setText(msg.content);
+//                holder.tv_send.setText("User: " + lists1.get(i).getUser() + "\n" + lists1.get(i).getMessage() + "\n" +
+//                        "\t\t" + lists1.get(i).getDate());
 //            }
             return view;
         }

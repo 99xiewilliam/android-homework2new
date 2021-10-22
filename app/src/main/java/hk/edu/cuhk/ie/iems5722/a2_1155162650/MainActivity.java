@@ -25,7 +25,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import hk.edu.cuhk.ie.iems5722.a2_1155162650.databinding.ActivityMainBinding;
 
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private List<String> list = new ArrayList<>();
     private ListView listView;
+    private Map<String, String> map = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,18 +71,27 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+
         new HttpTask() {
 
             @Override
             public void success() {
                 JSONObject json = super.getResponse();
                 System.out.println(json.toString());
+                String name = "null";
+                String id = "null";
                 try {
                     JSONArray jsonArray = json.getJSONArray("data");
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        String name = jsonObject.getString("name");
+                        if (jsonObject.has("name")) {
+                            name = jsonObject.getString("name");
+                        }
+                        if (jsonObject.has("id")) {
+                            id = jsonObject.getString("id");
+                        }
                         list.add(name);
+                        map.put(name, id);
                     }
                     listView = findViewById(R.id.chatrooms);
                     listView.setAdapter(new ArrayAdapter<String>(context, R.layout.activity_list_view, R.id.testView, list));
@@ -90,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
                             Object item = listView.getAdapter().getItem(i);
                             Intent it = new Intent(context, ChatActivity.class);
                             it.putExtra("name", item.toString());
+                            it.putExtra("id", map.get(item.toString()));
                             startActivity(it);
 
                             //Toast.makeText(context, item.toString(), Toast.LENGTH_SHORT).show();
