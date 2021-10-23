@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -49,6 +50,9 @@ public class ChatActivity extends AppCompatActivity {
     private Integer totalPage = 0;
     private Integer statusCode = 0;
     private Integer currentPage = 1;
+    //private Menu menu;
+    private MenuItem menuItem;
+    private String id;
 
 
     @Override
@@ -59,35 +63,25 @@ public class ChatActivity extends AppCompatActivity {
         Intent i = getIntent();
         actionBar.setTitle(i.getStringExtra("name"));
 //        System.out.println(i.getStringExtra("id"));
-        String id = i.getStringExtra("id");
+        id = i.getStringExtra("id");
 
         initView();
 
         httpToGet(id, "1");
 
+        refresh();
 
-        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-             @Override
-             public void onScrollStateChanged(AbsListView absListView, int i) {
-                 Log.d("kxflog", "onScrollStateChanged" + i);
-                 statusCode = i;
-             }
 
-             //1表示在滑动手在屏幕，4表示在滑动但是手不在屏幕，0表示停止
-             @Override
-             public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                Log.d("kxflog", "firstVisibleItem：" + firstVisibleItem + "visibleItemCount：" + visibleItemCount + "totalItemCount：" +totalItemCount);
-                if (statusCode != 0 && firstVisibleItem == 0) {
-                    if (currentPage < totalPage) {
-                        currentPage++;
-                        //Collections.reverse(lists);
-                        httpToGet(id, currentPage.toString());
-                    }
+//        ImageView view = findViewById(R.id.action_refresh);
+//        view.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view1) {
+//                currentPage = 0;
+//                lists.clear();
+//                httpToGet(id, "1");
+//            }
+//        });
 
-                }
-
-             }
-         });
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -184,7 +178,50 @@ public class ChatActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        menuItem = menu.findItem(R.id.action_refresh);
+        menuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                currentPage = 0;
+                lists.clear();
+                httpToGet(id, "1");
+                return true;
+            }
+        });
+
         return true;
+    }
+
+    @Override
+    public void onPostCreate(Bundle saveInstanceState) {
+        super.onPostCreate(saveInstanceState);
+
+        refresh();
+    }
+
+    public void refresh() {
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int i) {
+                Log.d("kxflog", "onScrollStateChanged" + i);
+                statusCode = i;
+            }
+
+            //1表示在滑动手在屏幕，4表示在滑动但是手不在屏幕，0表示停止
+            @Override
+            public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                Log.d("kxflog", "firstVisibleItem：" + firstVisibleItem + "visibleItemCount：" + visibleItemCount + "totalItemCount：" +totalItemCount);
+                if (statusCode != 0 && firstVisibleItem == 0) {
+                    if (currentPage < totalPage) {
+                        currentPage++;
+                        //Collections.reverse(lists);
+                        httpToGet(id, currentPage.toString());
+                    }
+
+                }
+
+            }
+        });
     }
 
 //    @Override
