@@ -3,13 +3,16 @@ package hk.edu.cuhk.ie.iems5722.a2_1155162650;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBar;
@@ -22,6 +25,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -49,6 +53,56 @@ public class ChatActivity extends AppCompatActivity {
 
         initView();
 
+        httpToGet(id, "1");
+
+
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+             @Override
+             public void onScrollStateChanged(AbsListView absListView, int i) {
+                 Log.d("kxflog", "onScrollStateChanged" + i);
+             }
+
+             @Override
+             public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                Log.d("kxflog", "firstVisibleItem" + firstVisibleItem + "visibleItemCount" + visibleItemCount + "totalItemCount" +totalItemCount);
+
+             }
+         });
+
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                judge = 1;
+                String content = editText.getText().toString();
+                if (content != null && !content.equals("")) {
+                    ChatMsgEntity chatMsgEntity = new ChatMsgEntity();
+                    chatMsgEntity.setMessage(content);
+                    chatMsgEntity.setDate(getDate());
+                    chatMsgEntity.setUser("william");
+                    new HttpPostTask() {
+                        @Override
+                        public void success() {
+                            JSONObject json = super.getResponse();
+                            System.out.println(json.toString());
+                        }
+
+                        @Override
+                        public void failed() {
+
+                        }
+                    }.execute("http://18.217.125.61/api/a3/send_message", id, "1155162650", chatMsgEntity.getUser(), chatMsgEntity.getMessage());
+                    lists.add(chatMsgEntity);
+                    myAdapter.notifyDataSetChanged();
+                    listView.setSelection(lists.size() - 1);
+                    editText.setText("");
+                }
+            }
+        });
+
+
+    }
+
+    public void httpToGet(String id, String page) {
         new HttpTask() {
             @Override
             public void success() {
@@ -77,6 +131,7 @@ public class ChatActivity extends AppCompatActivity {
                         }
                         lists.add(chatMsgEntity);
                     }
+                    Collections.reverse(lists);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -92,39 +147,7 @@ public class ChatActivity extends AppCompatActivity {
             public void failed() {
 
             }
-        }.execute("http://18.217.125.61/api/a3/get_messages?chatroom_id=" + id + "&page=1");
-
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                judge = 1;
-                String content = editText.getText().toString();
-                if (content!= null && !content.equals("")) {
-                    ChatMsgEntity chatMsgEntity = new ChatMsgEntity();
-                    chatMsgEntity.setMessage(content);
-                    chatMsgEntity.setDate(getDate());
-                    chatMsgEntity.setUser("william");
-                    new HttpPostTask() {
-                        @Override
-                        public void success() {
-                            JSONObject json = super.getResponse();
-                            System.out.println(json.toString());
-                        }
-
-                        @Override
-                        public void failed() {
-
-                        }
-                    }.execute("http://18.217.125.61/api/a3/send_message", id, "1155162650", chatMsgEntity.getUser(), chatMsgEntity.getMessage());
-                    lists.add(chatMsgEntity);
-                    myAdapter.notifyDataSetChanged();
-                    listView.setSelection(lists.size() - 1);
-                    editText.setText("");
-                }
-            }
-        });
-
-
+        }.execute("http://18.217.125.61/api/a3/get_messages?chatroom_id=" + id + "&page=" + page);
     }
 
     @Override
