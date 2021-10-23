@@ -2,6 +2,7 @@ package hk.edu.cuhk.ie.iems5722.a2_1155162650;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -15,6 +16,7 @@ import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -24,10 +26,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 //import hk.edu.cuhk.ie.iems5722.a2_1155162650.databinding.ActivityMainBinding;
 
@@ -39,6 +46,9 @@ public class ChatActivity extends AppCompatActivity {
     private List<ChatMsgEntity> lists = new ArrayList<>();
     private List<ChatMsgEntity> lists1 = new ArrayList<>();
     private Integer judge = 0;
+    private Integer totalPage = 0;
+    private Integer statusCode = 0;
+    private Integer currentPage = 1;
 
 
     @Override
@@ -60,11 +70,21 @@ public class ChatActivity extends AppCompatActivity {
              @Override
              public void onScrollStateChanged(AbsListView absListView, int i) {
                  Log.d("kxflog", "onScrollStateChanged" + i);
+                 statusCode = i;
              }
 
+             //1表示在滑动手在屏幕，4表示在滑动但是手不在屏幕，0表示停止
              @Override
              public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                Log.d("kxflog", "firstVisibleItem" + firstVisibleItem + "visibleItemCount" + visibleItemCount + "totalItemCount" +totalItemCount);
+                Log.d("kxflog", "firstVisibleItem：" + firstVisibleItem + "visibleItemCount：" + visibleItemCount + "totalItemCount：" +totalItemCount);
+                if (statusCode != 0 && firstVisibleItem == 0) {
+                    if (currentPage < totalPage) {
+                        currentPage++;
+                        //Collections.reverse(lists);
+                        httpToGet(id, currentPage.toString());
+                    }
+
+                }
 
              }
          });
@@ -104,6 +124,7 @@ public class ChatActivity extends AppCompatActivity {
 
     public void httpToGet(String id, String page) {
         new HttpTask() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void success() {
                 JSONObject jsonObj = super.getResponse();
@@ -111,6 +132,9 @@ public class ChatActivity extends AppCompatActivity {
                 try {
                     if (jsonObj.has("data")) {
                         json = jsonObj.getJSONObject("data");
+                        if (json.has("total_pages")) {
+                            totalPage = json.getInt("total_pages");
+                        }
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -131,7 +155,13 @@ public class ChatActivity extends AppCompatActivity {
                         }
                         lists.add(chatMsgEntity);
                     }
-                    Collections.reverse(lists);
+
+                    Collections.sort(lists, new SortClass());
+                    //Collections.reverse(lists);
+//                    lists = lists.stream().sorted((t1, t2) -> {
+//                        return Long.compare(convertTimeToLong(t2.getDate()), convertTimeToLong(t1.getDate()));
+//                    }).collect(Collectors.toList());
+                    //lists.sort((t1, t2) -> t2.getDate().compareTo(t1.getDate()));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -168,6 +198,14 @@ public class ChatActivity extends AppCompatActivity {
 //
 //    }
 
+//    @RequiresApi(api = Build.VERSION_CODES.O)
+//    public static Long convertTimeToLong(String time) {
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+//        LocalDateTime parse = LocalDateTime.parse(time, formatter);
+//        return LocalDateTime.from(parse).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+//
+//    }
+
     private static class ViewHolder {
         TextView tv_receive;
         TextView tv_send;
@@ -183,6 +221,8 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat format = new SimpleDateFormat("hh:mm");
         return format.format(new Date());
     }
+
+
 
     private class MyAdapter extends BaseAdapter {
 
