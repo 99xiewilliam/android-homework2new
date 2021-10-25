@@ -1,6 +1,5 @@
 package hk.edu.cuhk.ie.iems5722.a2_1155162650;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,30 +13,31 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
-//import hk.edu.cuhk.ie.iems5722.a2_1155162650.databinding.ActivityMainBinding;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 
 public class ChatActivity extends AppCompatActivity {
     private ImageView btn;
@@ -50,9 +50,11 @@ public class ChatActivity extends AppCompatActivity {
     private Integer totalPage = 0;
     private Integer statusCode = 0;
     private Integer currentPage = 1;
-    //private Menu menu;
     private MenuItem menuItem;
     private String id;
+    private Integer firstItem;
+    private Integer whetherClick = 0;
+    private Integer whetherFresh = 0;
 
 
     @Override
@@ -64,12 +66,15 @@ public class ChatActivity extends AppCompatActivity {
         actionBar.setTitle(i.getStringExtra("name"));
 //        System.out.println(i.getStringExtra("id"));
         id = i.getStringExtra("id");
+        myAdapter = new MyAdapter();
 
         initView();
 
-        httpToGet(id, "1");
+        //httpToGet(id, "1");
 
-        refresh();
+        getAsync(id, "1");
+
+        //refresh();
 
 
 //        ImageView view = findViewById(R.id.action_refresh);
@@ -86,6 +91,7 @@ public class ChatActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                whetherClick = 1;
                 judge = 1;
                 String content = editText.getText().toString();
                 if (content != null && !content.equals("")) {
@@ -93,22 +99,41 @@ public class ChatActivity extends AppCompatActivity {
                     chatMsgEntity.setMessage(content);
                     chatMsgEntity.setDate(getDate());
                     chatMsgEntity.setUser("william");
-                    new HttpPostTask() {
-                        @Override
-                        public void success() {
-                            JSONObject json = super.getResponse();
-                            System.out.println(json.toString());
-                        }
-
-                        @Override
-                        public void failed() {
-
-                        }
-                    }.execute("http://18.217.125.61/api/a3/send_message", id, "1155162650", chatMsgEntity.getUser(), chatMsgEntity.getMessage());
                     lists.add(chatMsgEntity);
-                    myAdapter.notifyDataSetChanged();
-                    listView.setSelection(lists.size() - 1);
-                    editText.setText("");
+                    ChatActivity.this.runOnUiThread(new Runnable() {
+                        @RequiresApi(api = Build.VERSION_CODES.N)
+                        @Override
+                        public void run() {
+                            myAdapter.setList(lists);
+                            listView.setAdapter(myAdapter);
+                            listView.setSelection(lists.size() - 1);
+                            editText.setText("");
+                        }
+                    });
+                    post("http://18.217.125.61/api/a3/send_message", id, "1155162650", chatMsgEntity.getUser(), chatMsgEntity.getMessage());
+
+
+//                    new Thread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            ChatActivity.this.runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+//
+//                                }
+//                            });
+//                        }
+//                    }).start();
+
+
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            //myAdapter.notifyDataSetChanged();
+//
+//                        }
+//                    });
+
                 }
             }
         });
@@ -116,62 +141,130 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    public void httpToGet(String id, String page) {
-        new HttpTask() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
+    public void post(String... params) {
+        OkHttpClient client = new OkHttpClient();
+        FormBody body = new FormBody.Builder().add("chatroom_id", params[1])
+                .add("user_id", params[2])
+                .add("name", params[3])
+                .add("message", params[4])
+                .build();
+        Request request = new Request.Builder()
+                .url(params[0])
+                .post(body)
+                .build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
             @Override
-            public void success() {
-                JSONObject jsonObj = super.getResponse();
-                JSONObject json = null;
-                try {
-                    if (jsonObj.has("data")) {
-                        json = jsonObj.getJSONObject("data");
-                        if (json.has("total_pages")) {
-                            totalPage = json.getInt("total_pages");
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    JSONArray jsonArray = json.getJSONArray("messages");
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        ChatMsgEntity chatMsgEntity = new ChatMsgEntity();
-                        if (jsonObject.has("message")) {
-                            chatMsgEntity.setMessage(jsonObject.getString("message"));
-                        }
-                        if (jsonObject.has("message_time")) {
-                            chatMsgEntity.setDate(jsonObject.getString("message_time"));
-                        }
-                        if (jsonObject.has("name")) {
-                            chatMsgEntity.setUser(jsonObject.getString("name"));
-                        }
-                        lists.add(chatMsgEntity);
-                    }
+            public void onFailure(Call call, IOException e) {
 
-                    Collections.sort(lists, new SortClass());
-                    //Collections.reverse(lists);
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String data = response.body().string();
+                    try {
+                        //setResponse(new JSONObject(data));
+                        System.out.println(new JSONObject(data));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+
+    public void getAsync(String id, String page) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url("http://18.217.125.61/api/a3/get_messages?chatroom_id=" + id + "&page=" + page).build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()){
+                    System.out.println(response);
+                    JSONObject jsonObj = null;
+                    try {
+                        jsonObj = new JSONObject(response.body().string());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    JSONObject json = null;
+                    try {
+                        if (jsonObj.has("data")) {
+                            json = jsonObj.getJSONObject("data");
+                            if (json.has("total_pages")) {
+                                totalPage = json.getInt("total_pages");
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        JSONArray jsonArray = json.getJSONArray("messages");
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                            ChatMsgEntity chatMsgEntity = new ChatMsgEntity();
+                            if (jsonObject.has("message")) {
+                                chatMsgEntity.setMessage(jsonObject.getString("message"));
+                            }
+                            if (jsonObject.has("message_time")) {
+                                chatMsgEntity.setDate(jsonObject.getString("message_time"));
+                            }
+                            if (jsonObject.has("name")) {
+                                chatMsgEntity.setUser(jsonObject.getString("name"));
+                            }
+                            lists.add(0, chatMsgEntity);
+                        }
+
+
+                        ChatActivity.this.runOnUiThread(new Runnable() {
+                            @RequiresApi(api = Build.VERSION_CODES.N)
+                            @Override
+                            public void run() {
+                                myAdapter.setList(lists);
+
+
+                                //listView.setSelection(lists.size() - 1);
+                            }
+                        });
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                myAdapter = new MyAdapter();
+//                                myAdapter.setList(lists);
+//                                listView.setAdapter(myAdapter);
+//                                listView.setSelection(lists.size() - 1);
+//                            }
+//                        });
+
+                        //Collections.sort(lists, new SortClass());
+                        //Collections.reverse(lists);
 //                    lists = lists.stream().sorted((t1, t2) -> {
 //                        return Long.compare(convertTimeToLong(t2.getDate()), convertTimeToLong(t1.getDate()));
 //                    }).collect(Collectors.toList());
-                    //lists.sort((t1, t2) -> t2.getDate().compareTo(t1.getDate()));
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                        //lists.sort((t1, t2) -> t2.getDate().compareTo(t1.getDate()));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    judge = 0;
+                    //myAdapter = new MyAdapter();
+                    //myAdapter.notifyDataSetChanged();
+//                            HashSet set = new HashSet(lists);
+//                            lists.clear();
+//                            lists.addAll(set);
+
+
+
                 }
-
-                judge = 0;
-                myAdapter = new MyAdapter();
-                listView.setAdapter(myAdapter);
-                myAdapter.notifyDataSetChanged();
-                listView.setSelection(lists.size() - 1);
             }
-
-            @Override
-            public void failed() {
-
-            }
-        }.execute("http://18.217.125.61/api/a3/get_messages?chatroom_id=" + id + "&page=" + page);
+        });
     }
 
     @Override
@@ -182,9 +275,19 @@ public class ChatActivity extends AppCompatActivity {
         menuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
+                whetherFresh = 1;
                 currentPage = 0;
                 lists.clear();
-                httpToGet(id, "1");
+                getAsync(id, "1");
+//                try {
+//                    Thread.sleep(100);
+//                    getAsync(id, "1");
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+                //myAdapter.clearList();
+                //System.out.println(myAdapter.getCount());
+                //myAdapter.setList(lists);
                 return true;
             }
         });
@@ -200,26 +303,32 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public void refresh() {
+
+
         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int i) {
                 Log.d("kxflog", "onScrollStateChanged" + i);
+                System.out.println("firstItem():" + absListView.getFirstVisiblePosition());
                 statusCode = i;
+                if (statusCode != 0 && firstItem == 0) {
+                    if (currentPage < totalPage) {
+                        System.out.println(currentPage);
+                        currentPage++;
+                        System.out.println("print times:");
+                        System.out.println(currentPage.toString());
+                        getAsync(id, currentPage.toString());
+
+                    }
+                }
             }
 
             //1表示在滑动手在屏幕，4表示在滑动但是手不在屏幕，0表示停止
             @Override
             public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                Log.d("kxflog", "firstVisibleItem：" + firstVisibleItem + "visibleItemCount：" + visibleItemCount + "totalItemCount：" +totalItemCount);
-                if (statusCode != 0 && firstVisibleItem == 0) {
-                    if (currentPage < totalPage) {
-                        currentPage++;
-                        //Collections.reverse(lists);
-                        httpToGet(id, currentPage.toString());
-                    }
-
-                }
-
+                Log.d("youdi", "firstVisibleItem：" + firstVisibleItem + "visibleItemCount：" + visibleItemCount + "totalItemCount：" +totalItemCount);
+                System.out.println("firstVisibleItem:" + firstVisibleItem);
+                firstItem = firstVisibleItem;
             }
         });
     }
@@ -255,28 +364,30 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public String getDate() {
-        SimpleDateFormat format = new SimpleDateFormat("hh:mm");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm");
         return format.format(new Date());
     }
 
 
 
     private class MyAdapter extends BaseAdapter {
+        private List<ChatMsgEntity> devices = new ArrayList<>();
 
         @Override
         public int getCount() {
-            return lists.size();
+            return devices.size();
         }
 
         @Override
         public Object getItem(int i) {
-            return lists.get(i);
+            return devices.get(i);
         }
 
         @Override
         public long getItemId(int i) {
             return i;
         }
+
 
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
@@ -310,17 +421,23 @@ public class ChatActivity extends AppCompatActivity {
 //            holder.tv_receive.setVisibility(View.VISIBLE);
 //            holder.tv_receive.setText("User: " + lists.get(i).getUser() + "\n" + lists.get(i).getMessage() + "\n" +
 //                    "\t\t" + lists.get(i).getDate());
-            if (lists.get(i).getUser() != null && !lists.get(i).getUser().equals("william")) {
-                holder.tv_receive.setVisibility(View.VISIBLE);
-                holder.tv_send.setVisibility(View.GONE);
-                holder.tv_receive.setText("User: " + lists.get(i).getUser() + "\n" + lists.get(i).getMessage() + "\n" +
-                        "\t\t" + lists.get(i).getDate());
-            } else {
-                holder.tv_send.setVisibility(View.VISIBLE);
-                holder.tv_receive.setVisibility(View.GONE);
-                holder.tv_send.setText("User: " + lists.get(i).getUser() + "\n" + lists.get(i).getMessage() + "\n" +
-                        "\t\t" + lists.get(i).getDate());
+            try {
+                System.out.println(devices.get(i));
+                if (i < devices.size() && devices.get(i) != null && !devices.get(i).getUser().equals("william")) {
+                    holder.tv_receive.setVisibility(View.VISIBLE);
+                    holder.tv_send.setVisibility(View.GONE);
+                    holder.tv_receive.setText("User: " + devices.get(i).getUser() + "\n" + devices.get(i).getMessage() + "\n" +
+                            "\t\t" + devices.get(i).getDate());
+                } else if (i < devices.size() && devices.get(i) != null && devices.get(i).getUser().equals("william")){
+                    holder.tv_send.setVisibility(View.VISIBLE);
+                    holder.tv_receive.setVisibility(View.GONE);
+                    holder.tv_send.setText("User: " + devices.get(i).getUser() + "\n" + devices.get(i).getMessage() + "\n" +
+                            "\t\t" + devices.get(i).getDate());
+                }
+            }catch (Exception e) {
+                e.printStackTrace();
             }
+
 //            if (judge == 1) {
 //                holder.tv_send.setVisibility(View.VISIBLE);
 //                holder.tv_receive.setVisibility(View.GONE);
@@ -328,6 +445,51 @@ public class ChatActivity extends AppCompatActivity {
 //                        "\t\t" + lists1.get(i).getDate());
 //            }
             return view;
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        public void setList(List<ChatMsgEntity> lists) {
+            if (lists != null) {
+                if (whetherFresh == 1) {
+                    devices.clear();
+                }
+
+                lists.stream().forEach(p -> {
+                    if (!devices.contains(p)) {
+                        devices.add(p);
+                    }
+                });
+                try {
+                    if (whetherClick == 0) {
+                        if (devices != null && devices.size() != 0) {
+                            Collections.sort(devices, new SortClass());
+                        }
+                    }else {
+                        whetherClick = 0;
+                    }
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                System.out.println(lists.size());
+                System.out.println("---------------------------------");
+                System.out.println(lists.size());
+                notifyDataSetChanged();
+                listView.setAdapter(myAdapter);
+                if (whetherFresh == 0) {
+                }else {
+                    System.out.println("lists_size" + lists.size());
+                    listView.setSelection(myAdapter.getCount() - 1);
+                    whetherFresh = 0;
+                }
+            }
+        }
+
+        public void clearList() {
+            if (lists != null) {
+                devices.clear();
+            }
+            notifyDataSetChanged();
         }
 
     }

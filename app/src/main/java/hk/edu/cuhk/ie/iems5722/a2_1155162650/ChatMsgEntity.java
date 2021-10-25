@@ -28,4 +28,23 @@ public class ChatMsgEntity {
     public void setUser(String user) {
         this.user = user;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ChatMsgEntity chatMsgEntity = (ChatMsgEntity) o;
+        if (!date.equals(chatMsgEntity.date) || !message.equals(chatMsgEntity.message) || !user.equals(chatMsgEntity.user)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = date.hashCode() + user.hashCode() + message.hashCode();
+        result = 16 * result + date.hashCode();
+        return result;
+    }
 }

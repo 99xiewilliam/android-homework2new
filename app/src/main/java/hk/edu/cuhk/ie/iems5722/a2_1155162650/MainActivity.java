@@ -4,12 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Menu;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.appcompat.widget.Toolbar;
@@ -24,12 +21,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import hk.edu.cuhk.ie.iems5722.a2_1155162650.databinding.ActivityMainBinding;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -71,54 +74,56 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        getHttpInfo(context);
 
-        new HttpTask() {
 
-            @Override
-            public void success() {
-                JSONObject json = super.getResponse();
-                System.out.println(json.toString());
-                String name = "null";
-                String id = "null";
-                try {
-                    JSONArray jsonArray = json.getJSONArray("data");
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        if (jsonObject.has("name")) {
-                            name = jsonObject.getString("name");
-                        }
-                        if (jsonObject.has("id")) {
-                            id = jsonObject.getString("id");
-                        }
-                        list.add(name);
-                        map.put(name, id);
-                    }
-                    listView = findViewById(R.id.chatrooms);
-                    listView.setAdapter(new ArrayAdapter<String>(context, R.layout.activity_list_view, R.id.testView, list));
-
-                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                            Object item = listView.getAdapter().getItem(i);
-                            Intent it = new Intent(context, ChatActivity.class);
-                            it.putExtra("name", item.toString());
-                            it.putExtra("id", map.get(item.toString()));
-                            startActivity(it);
-
-                            //Toast.makeText(context, item.toString(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void failed() {
-
-            }
-        }.execute("http://18.217.125.61/api/a3/get_chatrooms");
+//        new HttpTask() {
+//
+//            @Override
+//            public void success() {
+//                JSONObject json = super.getResponse();
+//                System.out.println(json.toString());
+//                String name = "null";
+//                String id = "null";
+//                try {
+//                    JSONArray jsonArray = json.getJSONArray("data");
+//                    for (int i = 0; i < jsonArray.length(); i++) {
+//                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+//                        if (jsonObject.has("name")) {
+//                            name = jsonObject.getString("name");
+//                        }
+//                        if (jsonObject.has("id")) {
+//                            id = jsonObject.getString("id");
+//                        }
+//                        list.add(name);
+//                        map.put(name, id);
+//                    }
+//                    listView = findViewById(R.id.chatrooms);
+//                    listView.setAdapter(new ArrayAdapter<String>(context, R.layout.activity_list_view, R.id.testView, list));
+//
+//                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//                        @Override
+//                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                            Object item = listView.getAdapter().getItem(i);
+//                            Intent it = new Intent(context, ChatActivity.class);
+//                            it.putExtra("name", item.toString());
+//                            it.putExtra("id", map.get(item.toString()));
+//                            startActivity(it);
+//
+//                            //Toast.makeText(context, item.toString(), Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//
+//            @Override
+//            public void failed() {
+//
+//            }
+//        }.execute("http://18.217.125.61/api/a3/get_chatrooms");
     }
 
 //    @Override
@@ -144,6 +149,143 @@ public class MainActivity extends AppCompatActivity {
             t.setTitle("IEMS5722");
         }
 
+    }
+
+    public void getHttpInfo(Context context) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url("http://18.217.125.61/api/a3/get_chatrooms").get().build();
+        int i = 0;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                   System.out.println("12312312");
+                    Call call = client.newCall(request);
+                    Response response = call.execute();
+                    if (response.isSuccessful()){
+                        System.out.println(response.toString());
+                        JSONObject json = null;
+                        try {
+                            json = new JSONObject(response.body().string());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println(json.toString());
+                        String name = "null";
+                        String id = "null";
+                        try {
+                            JSONArray jsonArray = json.getJSONArray("data");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                if (jsonObject.has("name")) {
+                                    name = jsonObject.getString("name");
+                                }
+                                if (jsonObject.has("id")) {
+                                    id = jsonObject.getString("id");
+                                }
+                                list.add(name);
+                                map.put(name, id);
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                listView = findViewById(R.id.chatrooms);
+                                listView.setAdapter(new ArrayAdapter<String>(context, R.layout.activity_list_view, R.id.testView, list));
+
+                                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                    @Override
+                                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                        Object item = listView.getAdapter().getItem(i);
+                                        Intent it = new Intent(context, ChatActivity.class);
+                                        it.putExtra("name", item.toString());
+                                        it.putExtra("id", map.get(item.toString()));
+                                        startActivity(it);
+
+                                        //Toast.makeText(context, item.toString(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        });
+
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void getAsync(Context context) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url("http://18.217.125.61/api/a3/get_chatrooms").get().build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()){
+                    System.out.println(response.toString());
+                    JSONObject json = null;
+                    try {
+                         json = new JSONObject(response.body().string());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(json.toString());
+                    String name = "null";
+                    String id = "null";
+                    try {
+                        JSONArray jsonArray = json.getJSONArray("data");
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                            if (jsonObject.has("name")) {
+                                name = jsonObject.getString("name");
+                            }
+                            if (jsonObject.has("id")) {
+                                id = jsonObject.getString("id");
+                            }
+                            list.add(name);
+                            map.put(name, id);
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            listView = findViewById(R.id.chatrooms);
+                            listView.setAdapter(new ArrayAdapter<String>(context, R.layout.activity_list_view, R.id.testView, list));
+
+                            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                    Object item = listView.getAdapter().getItem(i);
+                                    Intent it = new Intent(context, ChatActivity.class);
+                                    it.putExtra("name", item.toString());
+                                    it.putExtra("id", map.get(item.toString()));
+                                    startActivity(it);
+
+                                    //Toast.makeText(context, item.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    });
+
+                }
+            }
+        });
     }
 
 }
