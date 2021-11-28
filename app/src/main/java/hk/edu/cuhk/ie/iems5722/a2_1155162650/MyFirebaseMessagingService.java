@@ -8,16 +8,22 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
+    private static final String TAG = MyFirebaseMessagingService.class.getSimpleName();
+
+
     @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
-        System.out.println("-------------------------");
-        Log.d("tag", "token:" + token);
+        Log.d(TAG, "Token:" + token);
+        sendRegistrationToServer(token);
+    }
+
+    private void sendRegistrationToServer(String token) {
     }
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
-        Log.d("tag", "From" + remoteMessage.getFrom());
-        Log.d("tag", "message:" + remoteMessage.getData());
+        Log.d(TAG, "from:" + remoteMessage.getFrom());
+        Log.d(TAG, "message" + remoteMessage.getData());
     }
 }

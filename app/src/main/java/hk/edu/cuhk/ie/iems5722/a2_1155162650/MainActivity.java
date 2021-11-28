@@ -3,16 +3,19 @@ package hk.edu.cuhk.ie.iems5722.a2_1155162650;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -42,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
+    private static final String TAG = "MainActivity";
 
     private List<String> list = new ArrayList<>();
     private ListView listView;
@@ -51,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         Toolbar t = binding.appBarMain.toolbar;
         setContentView(binding.getRoot());
@@ -60,11 +63,25 @@ public class MainActivity extends AppCompatActivity {
         //binding.appBarMain.toolbar.setTitle("IEMS5722");
 
         setSupportActionBar(t);
-        Task<String> token = FirebaseMessaging.getInstance().getToken();
-        System.out.println("---------------------------------");
-        System.out.println();
 
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
 
+                        // Get new FCM registration token
+                        String token = task.getResult();
+
+                        // Log and toast
+                        String msg = getString(R.string.msg_token_fmt, token);
+                        Log.d(TAG, msg);
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
 //        binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
@@ -141,6 +158,12 @@ public class MainActivity extends AppCompatActivity {
 //        // Inflate the menu; this adds items to the action bar if it is present.
 //        getMenuInflater().inflate(R.menu.main, menu);
 //        return true;
+//    }
+
+//    public void runtimeEnableAutoInit() {
+//        // [START fcm_runtime_enable_auto_init]
+//        FirebaseMessaging.getInstance().setAutoInitEnabled(true);
+//        // [END fcm_runtime_enable_auto_init]
 //    }
 
     @Override

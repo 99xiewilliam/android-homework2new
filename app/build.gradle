@@ -33,7 +33,7 @@ android {
     }
 }
 
-
+//apply plugin: 'com.google.gms.google-services'
 
 dependencies {
 
@@ -52,8 +52,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.12.2'
     implementation "com.squareup.okhttp3:logging-interceptor:3.12.12"
 
-
-
+    implementation platform('com.google.firebase:firebase-bom:29.0.0')
+    implementation 'com.google.firebase:firebase-analytics'
+//    implementation 'com.google.firebase:firebase-messaging'
 
 
 
