@@ -7,7 +7,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.messaging.FirebaseMessaging;
+
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.NavController;
@@ -47,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         Toolbar t = binding.appBarMain.toolbar;
         setContentView(binding.getRoot());
@@ -55,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
         //binding.appBarMain.toolbar.setTitle("IEMS5722");
 
         setSupportActionBar(t);
+        Task<String> token = FirebaseMessaging.getInstance().getToken();
+        System.out.println("---------------------------------");
+        System.out.println();
+
+
 //        binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {

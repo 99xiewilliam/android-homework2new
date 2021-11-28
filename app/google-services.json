@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "352564192482",
-    "project_id": "android-f8ca4",
-    "storage_bucket": "android-f8ca4.appspot.com"
+    "project_number": "39964322832",
+    "project_id": "sinuous-axiom-325510",
+    "storage_bucket": "sinuous-axiom-325510.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:352564192482:android:a2870b99e89b24faee2abb",
+        "mobilesdk_app_id": "1:39964322832:android:8beca63888b0b35ebb6e95",
         "android_client_info": {
           "package_name": "hk.edu.cuhk.ie.iems5722.a2_1155162650"
         }
       },
       "oauth_client": [
         {
-          "client_id": "352564192482-avcab0smojt3vgnlq2r1b4av36qt39im.apps.googleusercontent.com",
+          "client_id": "39964322832-dul46omqpf1bs8in2el9uautpqu46b9e.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyC-d2WUwLs1xR3SGeFP2zXDhkuseQQ0Y8c"
+          "current_key": "AIzaSyB7zYq5pfRTzGSA_kXpzgVOYu5cDEpBGlI"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "352564192482-avcab0smojt3vgnlq2r1b4av36qt39im.apps.googleusercontent.com",
+              "client_id": "39964322832-dul46omqpf1bs8in2el9uautpqu46b9e.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

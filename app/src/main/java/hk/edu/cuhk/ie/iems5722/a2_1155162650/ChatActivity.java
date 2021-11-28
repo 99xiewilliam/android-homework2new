@@ -459,11 +459,13 @@ public class ChatActivity extends AppCompatActivity {
 //                        devices.add(p);
 //                    }
 //                });
-                for (ChatMsgEntity list : lists) {
+                for (ChatMsgEntity list: lists
+                     ) {
                     if (!devices.contains(list)) {
                         devices.add(list);
                     }
                 }
+
                 try {
                     if (whetherClick == 0) {
                         if (devices != null && devices.size() != 0) {
