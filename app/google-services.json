@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "352564192482",
+    "project_id": "android-f8ca4",
+    "storage_bucket": "android-f8ca4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:352564192482:android:ae9d93a250d31fadee2abb",
+        "android_client_info": {
+          "package_name": "hk.edu.cuhk.ie.iems5722.a2_1155162650"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "352564192482-avcab0smojt3vgnlq2r1b4av36qt39im.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-d2WUwLs1xR3SGeFP2zXDhkuseQQ0Y8c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "352564192482-avcab0smojt3vgnlq2r1b4av36qt39im.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
