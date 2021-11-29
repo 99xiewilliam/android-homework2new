@@ -55,6 +55,7 @@ public class ChatActivity extends AppCompatActivity {
     private Integer firstItem;
     private Integer whetherClick = 0;
     private Integer whetherFresh = 0;
+    private String ip = "47.119.128.222";
 
 
     @Override
@@ -110,7 +111,7 @@ public class ChatActivity extends AppCompatActivity {
                             editText.setText("");
                         }
                     });
-                    post("http://18.217.125.61/api/a3/send_message", id, "1155162650", chatMsgEntity.getUser(), chatMsgEntity.getMessage());
+                    post("http://" + ip + "/api/a3/send_message", id, "1155162650", chatMsgEntity.getUser(), chatMsgEntity.getMessage());
 
 
 //                    new Thread(new Runnable() {
@@ -176,7 +177,7 @@ public class ChatActivity extends AppCompatActivity {
 
     public void getAsync(String id, String page) {
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url("http://18.217.125.61/api/a3/get_messages?chatroom_id=" + id + "&page=" + page).build();
+        Request request = new Request.Builder().url("http://" + ip + "/api/a3/get_messages?chatroom_id=" + id + "&page=" + page).build();
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override

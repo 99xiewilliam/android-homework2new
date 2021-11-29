@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private List<String> list = new ArrayList<>();
     private ListView listView;
     private Map<String, String> map = new HashMap<>();
+    private String ip = "47.119.128.222";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -187,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void getHttpInfo(Context context) {
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url("http://18.217.125.61/api/a3/get_chatrooms").get().build();
+        Request request = new Request.Builder().url("http://"+ ip +"/api/a3/get_chatrooms").get().build();
         int i = 0;
         new Thread(new Runnable() {
             @Override
@@ -257,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void getAsync(Context context) {
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url("http://18.217.125.61/api/a3/get_chatrooms").get().build();
+        Request request = new Request.Builder().url("http://" + ip + "/api/a3/get_chatrooms").get().build();
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override
