@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private List<String> list = new ArrayList<>();
     private ListView listView;
     private Map<String, String> map = new HashMap<>();
-    private String ip = "47.119.128.222";
+    private String ip = "47.250.50.72";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -55,7 +55,7 @@ public class ChatActivity extends AppCompatActivity {
     private Integer firstItem;
     private Integer whetherClick = 0;
     private Integer whetherFresh = 0;
-    private String ip = "47.119.128.222";
+    private String ip = "47.250.50.72";
 
 
     @Override
