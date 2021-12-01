@@ -21,7 +21,7 @@ import okhttp3.Response;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = MyFirebaseMessagingService.class.getSimpleName();
-    private String ip = "47.119.128.222:5000";
+    private String ip = "47.250.50.72";
 
 
     @Override
