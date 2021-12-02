@@ -1,5 +1,9 @@
 package hk.edu.cuhk.ie.iems5722.a2_1155162650;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +22,8 @@ import android.widget.TextView;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,7 +34,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 
 import okhttp3.Call;
@@ -56,6 +61,37 @@ public class ChatActivity extends AppCompatActivity {
     private Integer whetherClick = 0;
     private Integer whetherFresh = 0;
     private String ip = "47.250.50.72";
+
+
+//    public void sendNotification(String title, String context) {
+//        //NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+//        NotificationChannel notificationChannel = null;
+//        String CHANNEL_ID = String.valueOf(System.currentTimeMillis());
+//        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            notificationChannel = new NotificationChannel(CHANNEL_ID, "channel_name", NotificationManager.IMPORTANCE_HIGH);
+//            notificationManager.createNotificationChannel(notificationChannel);
+//        }
+//
+//        int notificationId = 0;
+//        NotificationCompat.Builder builder = new NotificationCompat.Builder(ChatActivity.this, CHANNEL_ID)
+//                .setSmallIcon(R.drawable.notification)
+//                .setContentTitle(title)
+//                .setContentText(context)
+//                .setAutoCancel(true);
+//
+//        Intent indent = new Intent(this, MainActivity.class);
+//        indent.setAction(Intent.ACTION_MAIN);
+//        indent.addCategory(Intent.CATEGORY_LAUNCHER);
+//
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, indent, PendingIntent.FLAG_UPDATE_CURRENT);
+//
+//        builder.setContentIntent(pendingIntent);
+//        builder.setFullScreenIntent(pendingIntent, true);
+//
+//        notificationManager.notify(notificationId, builder.build());
+//    }
 
 
     @Override
@@ -499,6 +535,7 @@ public class ChatActivity extends AppCompatActivity {
             }
             notifyDataSetChanged();
         }
+
 
     }
 
