@@ -103,8 +103,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
 
         // Check if message contains a data payload.
+        String id = null;
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+             id = remoteMessage.getData().get("id");
 
             if (/* Check if data needs to be processed by long running job */ true) {
                 // For long-running tasks (10 seconds or more) use WorkManager.
@@ -120,7 +122,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
             Log.d(TAG, "Message Notification title: " + remoteMessage.getNotification().getTitle());
-            sendNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
+            sendNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody(), id);
 //            ChatActivity chatActivity = new ChatActivity();
 //            chatActivity.sendNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
         }
@@ -129,7 +131,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // message, here is where that should be initiated. See sendNotification method below.
     }
 
-    public void sendNotification(String title, String context) {
+    public void sendNotification(String title, String context, String id) {
         String CHANNEL_ID = String.valueOf(System.currentTimeMillis());
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -140,10 +142,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setAutoCancel(true);
 
-        Intent indent = new Intent(this, MainActivity.class);
+        Intent indent = new Intent(this, ChatActivity.class);
 //        indent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         indent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
         indent.addCategory(Intent.CATEGORY_LAUNCHER);
+        indent.putExtra("id", id);
+        indent.putExtra("name", title);
+
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, indent, PendingIntent.FLAG_ONE_SHOT);
 
