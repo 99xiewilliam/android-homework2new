@@ -104,9 +104,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Check if message contains a data payload.
         String id = null;
+        String chatroom_name = null;
+        String meg = null;
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-             id = remoteMessage.getData().get("id");
+            id = remoteMessage.getData().get("id");
+            meg = remoteMessage.getData().get("meg");
+            chatroom_name = remoteMessage.getData().get("chatroom_name");
+            sendNotification(chatroom_name, meg, id);
 
             if (/* Check if data needs to be processed by long running job */ true) {
                 // For long-running tasks (10 seconds or more) use WorkManager.
